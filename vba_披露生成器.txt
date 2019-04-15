@@ -1,0 +1,220 @@
+
+
+'--------------------------------------------------------------------------------
+'更新时间：2019 年4月15日
+'作者：davidyang
+'版本：v1.0
+'--------------------------------------------------------------------------------
+Private Sub CommandButton1_Click()  '定义私有的按钮函数
+Dim FilesToOpen         '定义 变量 filestoopen
+Dim x As Integer        '定义变量  x
+Dim y As Integer
+Dim n As Integer
+Dim k As Integer
+Dim i As Integer
+Dim j As Integer
+
+On Error GoTo ErrHandler   '待查
+
+Application.ScreenUpdating = False   '取消屏幕刷新
+
+
+    tn = ThisWorkbook.Name    '本工作簿的引用
+    
+    Set nAzy = Worksheets("汇总表")     '汇总表
+    Set nPzy = Worksheets("披露表")     '披露表
+    
+    ls = nAzy.Range("B65535").End(xlUp).Row  '取第二列？有值的最后一行
+    'MsgBox "当前ls是" & ls
+   '---------------------------------------------------------------------------------粘贴汇总表相关列
+    
+    nAzy.Range("C4:C" & ls).Copy         '关联人
+    Workbooks(tn).Activate
+    nPzy.Range("D8:D" & ls).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+    :=False, Transpose:=False
+    
+    nAzy.Range("N4:N" & ls).Copy         '交易概述
+    Workbooks(tn).Activate
+    nPzy.Range("F8:F" & ls).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+    :=False, Transpose:=False
+    
+    nAzy.Range("M4:M" & ls).Copy         '交易类型
+    Workbooks(tn).Activate
+    nPzy.Range("G8:G" & ls).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+    :=False, Transpose:=False
+    
+    nAzy.Range("J4:J" & ls).Copy         '交易金额
+    Workbooks(tn).Activate
+    nPzy.Range("H8:H" & ls).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+    :=False, Transpose:=False
+    
+    '--------------------------------------------------------------------------------换单位
+
+    nPzy.Range("I8:I" & (ls + 4)).FormulaR1C1 = "=RC[-1]/10000"
+    
+    nPzy.Range("I8:I" & (ls + 4)).Copy
+    Workbooks(tn).Activate
+    nPzy.Range("H8:H" & (ls + 4)).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+    :=False, Transpose:=False
+    
+    nPzy.Range("I8:I" & (ls + 4)).ClearContents
+
+    '--------------------------------------------------------------------------------合并单元格
+'    k = 4
+'    Workbooks(tn).Activate
+'    For n = 1 To 2 Step -1
+'        If nPzy.Cells(n, k) = nPzy.Cells(n - 1, k) Then
+'           nPzy.Range(Cells(n - 1, k), nPzy.Cells(n, k)).Merge
+'
+'        End If
+'    Next
+ j = 4             '关联人列
+ n = 7             '关系概述列
+ p = 6             '关系概述分类列
+ q = 8             '交易金额
+ Application.DisplayAlerts = False    '合并单元格的告警提示去掉
+ 
+ ''合并关联交易人
+ For i = ls + 4 To 8 Step -1       '两个表差4行
+
+       
+       If Worksheets("披露表").Cells(i, j) = Worksheets("披露表").Cells(i - 1, j) Then
+
+
+                Worksheets("披露表").Range(Worksheets("披露表").Cells(i, j), Worksheets("披露表").Cells(i - 1, j)).Merge
+
+                If Worksheets("披露表").Cells(i, n) = Worksheets("披露表").Cells(i - 1, n) Then
+                  Worksheets("披露表").Range(Worksheets("披露表").Cells(i, n), Worksheets("披露表").Cells(i - 1, n)).Merge
+                  Worksheets("披露表").Range(Worksheets("披露表").Cells(i, p), Worksheets("披露表").Cells(i - 1, p)).Merge
+                  
+                 Worksheets("披露表").Cells(i - 1, q) = Worksheets("披露表").Cells(i, q) + Worksheets("披露表").Cells(i - 1, q)
+                  
+                 Worksheets("披露表").Range(Worksheets("披露表").Cells(i, q), Worksheets("披露表").Cells(i - 1, q)).Merge
+                 Worksheets("披露表").Rows(i).Delete
+                
+
+                End If
+        End If
+'
+ Next
+ ''合并单元格
+
+ Application.DisplayAlerts = True   '合并单元格的告警提示加上
+ 
+
+ nPzy.Range("A8:H" & (ls + 4)).Borders.LineStyle = xlContinuous '给表格加上边框
+ 
+ MsgBox "已生成披露表"
+ 
+ 
+'异常退出的处理
+ExitHandler:
+Application.ScreenUpdating = True
+Exit Sub
+ErrHandler:
+MsgBox Err.Description
+Resume ExitHandler
+
+
+End Sub
+
+Private Sub CommandButton2_Click()   '重置汇总表 功能
+
+Set nAzy = Worksheets("披露表")
+    Worksheets("披露表").Rows("8:2000").MergeCells = False    '取消合并单元格
+nAzy.Range("A8:H2000").ClearContents       '清除单元格内容
+
+
+MsgBox "已经清空"
+
+End Sub
+
+Private Sub CommandButton3_Click()
+
+'Dim FilesToOpen         '定义 变量 filestoopen
+Dim x As Integer        '定义变量  x
+Dim y As Integer
+On Error GoTo ErrHandler   '待查
+
+Application.ScreenUpdating = False   '取消屏幕刷新
+
+
+    x = 4                     'x 赋值1  循环开始
+    y = 0
+    tn = ThisWorkbook.Name    '本工作簿的引用
+    'MsgBox "当前的工作簿是" & tn
+    
+    Set nAzy = Worksheets("汇总表")     '本工作簿的第一个sheet
+    Set nPzy = Worksheets("披露表")
+    
+    ls = nAzy.Range("B65535").End(xlUp).Row  '取第二列？有值的最后一行
+    MsgBox "当前ls是" & ls
+    
+    '-------------------------------------------------------------------------'检查关联人、交易金额等是否为空
+    '对为空的部分标红，检查表格
+
+While (x <= ls)   '当x<=行数
+
+   If (IsEmpty(nAzy.Range("B" & x))) Then
+      nAzy.Range("B" & x).Interior.Color = vbRed
+       y = y + 1
+
+   End If
+   If (IsEmpty(nAzy.Range("J" & x))) Then
+       nAzy.Range("J" & x).Interior.Color = vbRed
+       y = y + 1
+   End If
+       
+   If (IsEmpty(nAzy.Range("K" & x))) Then
+       nAzy.Range("K" & x).Interior.Color = vbRed
+       y = y + 1
+   End If
+   
+   If (IsEmpty(nAzy.Range("L" & x))) Then
+       nAzy.Range("L" & x).Interior.Color = vbRed
+       y = y + 1
+   End If
+   
+
+   
+    x = x + 1
+    
+Wend
+
+If (y = 0) Then
+    MsgBox "检查完毕，没有问题"
+    Else
+    MsgBox "缺少数值的单元格已经标红，个数是" & y
+    
+End If
+'-------------------------------------------------------------------------------'按照关联人 和概述排序
+    Workbooks(tn).Activate
+    Range("A4:R" & ls).Select
+    Application.CutCopyMode = False
+    ActiveWorkbook.Worksheets("汇总表").Sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("汇总表").Sort.SortFields.Add Key:=Range("B4:B" & ls), _
+        SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("汇总表").Sort.SortFields.Add Key:=Range("L4:L" & ls), _
+        SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("汇总表").Sort
+        .SetRange Range("A4:R" & ls)
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    MsgBox "排序完成"
+
+'--------------------------------------------------------------------------------
+    
+ExitHandler:
+Application.ScreenUpdating = True
+Exit Sub
+ErrHandler:
+MsgBox Err.Description
+Resume ExitHandler
+
+
+
+End Sub

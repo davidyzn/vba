@@ -1,0 +1,129 @@
+Private Sub CommandButton1_Click()  '定义私有的按钮函数
+Dim FilesToOpen         '定义 变量 filestoopen
+Dim x As Integer        '定义变量  x
+Dim y As Integer
+On Error GoTo ErrHandler   '待查
+
+Application.ScreenUpdating = False   '取消屏幕刷新
+
+FilesToOpen = Application.GetOpenFilename(FileFilter:="Excel Files,*.xls*", MultiSelect:=True, Title:="要采集的文件")
+'打开要采集的文件，支持xls*等格式，支持选择多个文件
+
+If TypeName(FilesToOpen) = "Boolean" Then   '如果filestoopen 是否
+
+    MsgBox "没有选中文件"    '信息框   没有选中文件
+    GoTo ExitHandler        '跳转到  退出
+End If
+
+
+    x = 1                     'x 赋值1  循环开始
+    y = 0
+    tn = ThisWorkbook.Name    '本工作簿的引用
+    'MsgBox "当前的工作簿是" & tn
+    
+    Set nAzy = Worksheets("汇总表")     '本工作簿的第一个sheet
+    
+'    Set wbn = Workbooks.Open(Filename:=FilesToOpen(x))    '打开工作簿
+'
+'    wbn.Sheets(1).Range("A1:R3").Copy
+'    Workbooks(tn).Activate
+'    nAzy.Range("A1").PasteSpecial Paste:=xlPasteAll, Operation:=xlNone, SkipBlanks _
+'        :=False, Transpose:=False
+
+
+While x <= UBound(FilesToOpen)    '当x<=文件个数
+
+'Workbooks.Open Filename:=FilesToOpen(x) '以此打开文件
+'Sheets().Move After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count) '将打开的文件工作表移动到这个工作表的最后一个工作表后面
+'y = x + 1    '赋值y
+
+    'MsgBox "wbn是"
+    
+    'wbn.Worksheets(1).Copy
+    
+    Set wbn = Workbooks.Open(Filename:=FilesToOpen(x))    '打开工作簿
+    
+    ls = wbn.Worksheets("关联交易信息统计表-2019年1季度").Range("B65535").End(xlUp).Row  '取第二列？有值的最后一行
+    ' ls = wbn.Sheets(1).Cells(Rows.Count, 2).End(xlUp).Row '取第一列有值的最后一行
+    ' ls = wbn.Worksheets("关联交易信息统计表-2019年1季度").Cells.Find("*", , , , xlByRows, xlPrevious).Row
+    'ls = wbn.Sheets(1).Range("B:B").Find("*", , , , xlByRows, xlPrevious).Row
+    'MsgBox "wdn的名字是" & wbn.Name
+   ' MsgBox "ls是" & ls
+    'MsgBox "行数是" & (ls - 3)
+    'MsgBox "nAzy是" & nAzy.Name
+    
+    
+    wbn.Worksheets("关联交易信息统计表-2019年1季度").Range("A4:R" & ls).Copy
+    Workbooks(tn).Activate
+
+    nAzy.Range("A" & (4 + y)).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+
+'
+'    'xlDown:从被选中的单元格向下寻找，如果被选中单元格为空，则一直向下走到第一个非空单元格；如果被选中单元格为非空，则向下走到最后一个非空单元格。
+'
+'    wbn.Sheets(1).Range("B4:B" & ls).Copy
+''   Workbooks(tn).Activate
+'    nAzy.Range("D8").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+'     :=False, Transpose:=False
+'
+'            wbn.Sheets(1).Range("L6:L" & ls).Copy
+'    Workbooks(tn).Activate
+'    nAzy.Range("G8").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+'        :=False, Transpose:=False
+'
+'            wbn.Sheets(1).Range("K6:K" & ls).Copy
+'    Workbooks(tn).Activate
+'    nAzy.Range("i8").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+'        :=False, Transpose:=False
+'
+'            wbn.Sheets(1).Range("i6:i" & ls).Copy
+'    Workbooks(tn).Activate
+'    nAzy.Range("h8").PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+'        :=False, Transpose:=False
+'
+'    wbn.Close False
+'    ar = 0
+    'MsgBox "y是" & y
+    y = y + ls - 3
+    x = x + 1
+    'MsgBox "y是" & y
+    
+    '分类汇总
+    'Range("D7:I11").Select
+    
+    '    Selection.Subtotal GroupBy:=1, Function:=xlSum, TotalList:=Array(6), _
+    '    Replace:=False, PageBreaks:=False, SummaryBelowData:=True
+    'Selection.Subtotal GroupBy:=4, Function:=xlSum, TotalList:=Array(6), _
+    '    Replace:=False, PageBreaks:=False, SummaryBelowData:=True
+    '
+ 
+
+    
+Wend
+
+    y = y + 3
+    nAzy.Range("A4:R" & y).Borders.LineStyle = xlContinuous
+    nAzy.Range("G4:G2000").NumberFormatLocal = "yyyy年m月d日"
+    
+    MsgBox "已经汇总完毕"
+    
+ExitHandler:
+Application.ScreenUpdating = True
+Exit Sub
+ErrHandler:
+MsgBox Err.Description
+Resume ExitHandler
+
+
+End Sub
+
+Private Sub CommandButton2_Click()
+
+Set nAzy = Worksheets("汇总表")
+nAzy.Range("A4:R2000").Delete
+
+
+MsgBox "已经清空"
+
+End Sub
